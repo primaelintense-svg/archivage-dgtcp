@@ -9,12 +9,21 @@ class Document extends Model
 {
     use HasFactory;
 
+    public const DUREE_CONSERVATION_ANNEES = 10;
+
     protected $fillable = [
         'titre',
         'reference',
         'statut',
+        'motif_rejet',
+        'type_document',
+        'service',
+        'exercice_comptable',
+        'montant',
+        'description',
         'date_depot',
         'date_traitement',
+        'date_expiration',
         'utilisateur_depot_id',
         'utilisateur_traitant_id',
         'classification_id',
@@ -25,6 +34,8 @@ class Document extends Model
         return [
             'date_depot' => 'datetime',
             'date_traitement' => 'datetime',
+            'date_expiration' => 'date',
+            'montant' => 'decimal:2',
         ];
     }
 
@@ -45,25 +56,22 @@ class Document extends Model
         return $this->belongsTo(Classification::class);
     }
 
-    // Un document possède exactement un fichier (1,1)
     public function fichier()
     {
         return $this->hasOne(Fichier::class);
     }
 
-    // Un document peut avoir plusieurs entrées d'index (0,n)
     public function indexations()
     {
         return $this->hasMany(Indexation::class);
     }
 
-    // Un document peut générer plusieurs notifications (0,n)
     public function notifications()
     {
         return $this->hasMany(NotificationDocument::class);
     }
 
-    // ---- Scopes utiles (RG14 : visibilité selon statut) ----
+    // ---- Scopes ----
 
     public function scopeArchives($query)
     {
@@ -75,7 +83,7 @@ class Document extends Model
         return $query->where('statut', 'en_attente');
     }
 
-    // ---- Helpers de cycle de vie (RG6, RG7) ----
+    // ---- Helpers de cycle de vie ----
 
     public function estEnAttente(): bool
     {
@@ -84,7 +92,32 @@ class Document extends Model
 
     public function peutEtreModifie(): bool
     {
-        // RG16 : modifiable par l'agent uniquement tant qu'en attente
         return $this->estEnAttente();
+    }
+
+    public static function genererReference(): string
+    {
+        $annee = now()->year;
+
+        do {
+            $dernier = self::where('reference', 'like', "DGTCP-{$annee}-%")->count() + 1;
+            $reference = sprintf('DGTCP-%d-%04d', $annee, $dernier);
+        } while (self::where('reference', $reference)->exists());
+
+        return $reference;
+    }
+
+    public static function calculerDateExpiration(\DateTimeInterface $dateDepot): \Carbon\Carbon
+    {
+        return \Carbon\Carbon::instance($dateDepot)->addYears(self::DUREE_CONSERVATION_ANNEES);
+    }
+
+    public function expireBientot(int $seuilJours = 90): bool
+    {
+        if (! $this->date_expiration) {
+            return false;
+        }
+
+        return now()->diffInDays($this->date_expiration, false) <= $seuilJours;
     }
 }

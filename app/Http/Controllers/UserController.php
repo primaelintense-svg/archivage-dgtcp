@@ -2,109 +2,89 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JournalActivite;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    // Liste de tous les comptes (RG16)
-    public function index()
-    {
-        $users = User::orderBy('nom')->paginate(15);
-
-        return view('users.index', compact('users'));
-    }
-
+    /**
+     * Afficher le formulaire de création d'un utilisateur.
+     */
     public function create()
     {
         return view('users.create');
     }
 
-    // Ajout d'un compte utilisateur (RG16 : administrateur uniquement)
+    /**
+     * Enregistrer un nouvel utilisateur.
+     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nom' => ['required', 'string', 'max:100'],
-            'prenom' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', Rule::in(['agent_comptable', 'archiviste', 'administrateur', 'visiteur'])],
+        $donnees = $request->validate([
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'role' => ['required', Rule::in(['agent_comptable', 'archiviste', 'administrateur', 'visiteur', 'consultant'])],
         ]);
 
-        $user = User::create([
-            'nom' => $data['nom'],
-            'prenom' => $data['prenom'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => $data['role'],
+        User::create([
+            'nom' => $donnees['nom'],
+            'prenom' => $donnees['prenom'],
+            'email' => $donnees['email'],
+            'password' => Hash::make($donnees['password']),
+            'role' => $donnees['role'],
             'actif' => true,
+            'doit_changer_mot_de_passe' => true,
         ]);
 
-        JournalActivite::enregistrer(
-            Auth::id(),
-            'creation_utilisateur',
-            "Création du compte {$user->email} ({$user->role})"
-        );
-
-        return redirect()->route('users.index')->with('succes', 'Utilisateur créé avec succès.');
+        return redirect()->route('admin.dashboard')->with('succes', 'Utilisateur créé avec succès.');
     }
 
+    /**
+     * Afficher le formulaire de modification d'un utilisateur.
+     */
     public function edit(User $user)
     {
         return view('users.edit', compact('user'));
     }
 
-    // Modification d'un compte (nom, prénom, email, rôle — mot de passe optionnel)
+    /**
+     * Mettre à jour un utilisateur existant.
+     */
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
-            'nom' => ['required', 'string', 'max:100'],
-            'prenom' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => ['required', Rule::in(['agent_comptable', 'archiviste', 'administrateur', 'visiteur'])],
-            'password' => ['nullable', 'string', 'min:8'],
+        $donnees = $request->validate([
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'role' => ['required', Rule::in(['agent_comptable', 'archiviste', 'administrateur', 'visiteur', 'consultant'])],
         ]);
 
-        $user->nom = $data['nom'];
-        $user->prenom = $data['prenom'];
-        $user->email = $data['email'];
-        $user->role = $data['role'];
+        $user->update($donnees);
 
-        if (! empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
-        }
-
-        $user->save();
-
-        JournalActivite::enregistrer(
-            Auth::id(),
-            'modification_utilisateur',
-            "Modification du compte {$user->email}"
-        );
-
-        return redirect()->route('users.index')->with('succes', 'Utilisateur modifié avec succès.');
+        return redirect()->route('admin.dashboard')->with('succes', 'Utilisateur modifié avec succès.');
     }
 
-    // Active ou désactive un compte (RG16)
+    /**
+     * Activer / désactiver un utilisateur.
+     */
     public function toggleActif(User $user)
     {
-        if ($user->id === Auth::id()) {
-            return back()->withErrors(['erreur' => 'Vous ne pouvez pas désactiver votre propre compte.']);
-        }
+        $user->update(['actif' => ! $user->actif]);
 
-        $user->actif = ! $user->actif;
-        $user->save();
+        return redirect()->route('admin.dashboard')->with('succes', 'Statut de l\'utilisateur mis à jour.');
+    }
 
-        JournalActivite::enregistrer(
-            Auth::id(),
-            $user->actif ? 'activation_utilisateur' : 'desactivation_utilisateur',
-            "Compte {$user->email} " . ($user->actif ? 'activé' : 'désactivé')
-        );
+    /**
+     * Supprimer un utilisateur.
+     */
+    public function destroy(User $user)
+    {
+        $user->delete();
 
-        return back()->with('succes', 'Statut du compte mis à jour.');
+        return redirect()->route('admin.dashboard')->with('succes', 'Utilisateur supprimé avec succès.');
     }
 }

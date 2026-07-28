@@ -17,6 +17,7 @@ class User extends Authenticatable
         'password',
         'role',
         'actif',
+        'doit_changer_mot_de_passe',
     ];
 
     protected $hidden = [
@@ -30,10 +31,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'actif' => 'boolean',
+            'doit_changer_mot_de_passe' => 'boolean',
         ];
     }
-
-    // ---- Rôles (RG2 : un seul rôle par utilisateur) ----
 
     public function estAgentComptable(): bool
     {
@@ -55,8 +55,6 @@ class User extends Authenticatable
         return $this->role === 'visiteur';
     }
 
-    // ---- Relations ----
-
     public function documentsDeposes()
     {
         return $this->hasMany(Document::class, 'utilisateur_depot_id');
@@ -76,8 +74,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(JournalActivite::class, 'utilisateur_id');
     }
-
-    // ---- Scopes ----
 
     public function scopeActifs($query)
     {
