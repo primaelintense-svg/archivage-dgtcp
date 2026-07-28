@@ -16,6 +16,9 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Installer les extensions PHP
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
+# Activer mod_rewrite pour Laravel
+RUN a2enmod rewrite
+
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
