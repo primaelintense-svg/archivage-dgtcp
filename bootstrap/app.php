@@ -12,12 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->alias([
-        'role' => \App\Http\Middleware\CheckRole::class,
-        'doit_changer_mdp' => \App\Http\Middleware\ForcerChangementMotDePasse::class,
-    ]);
+        $middleware->trustProxies(at: '*');
 
-
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
+            'doit_changer_mdp' => \App\Http\Middleware\ForcerChangementMotDePasse::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
