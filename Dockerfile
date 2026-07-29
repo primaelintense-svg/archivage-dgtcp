@@ -1,42 +1,21 @@
-FROM php:8.3-apache
+FROM richarvey/nginx-php-fpm:3.1.6
 
-# Installer les dépendances système et extensions nécessaires pour Laravel
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
+COPY . .
 
-# Nettoyer
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Config de l'image
+ENV SKIP_COMPOSER=1
+ENV WEBROOT=/var/www/html/public
+ENV PHP_ERRORS_STDERR=1
+ENV RUN_SCRIPTS=1
+ENV REAL_IP_HEADER=1
 
-# Installer les extensions PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Config Laravel (production)
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+ENV LOG_CHANNEL=stderr
 
-# Activer mod_rewrite pour Laravel
-RUN a2enmod rewrite
+# Autorise l'exécution du script de déploiement (scripts/00-laravel-deploy.sh)
+# qui lance composer install, les migrations, et la mise en cache de la config
+RUN chmod +x scripts/00-laravel-deploy.sh
 
-# Installer Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Définir le dossier de travail
-WORKDIR /var/www/html
-
-# Copier les fichiers du projet
-COPY . /var/www/html
-
-# Configurer Apache pour pointer vers le dossier public de Laravel
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf
-RUN sed -ri -e "s!/var/www/!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf
-# Donner les bonnes permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Installer les dépendances avec Composer
-RUN composer install --no-dev --optimize-autoloader
-
-# Exposer le port 80 pour Render
-EXPOSE 80
+CMD ["/start.sh"]
