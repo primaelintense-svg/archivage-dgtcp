@@ -6,8 +6,6 @@ php artisan key:generate --force --show || true
 echo "Exécution des migrations..."
 php artisan migrate --force
 
-echo "Exécution du seeder..."
-php artisan db:seed --force
 
 echo "Mise en cache de la configuration..."
 php artisan config:cache
