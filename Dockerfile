@@ -1,16 +1,12 @@
-FROM richarvey/nginx-php-fpm:3.1.6
-COPY . .
+FROM webdevops/php-nginx:8.3-alpine
 
-# Config de l'image
-ENV WEBROOT=/var/www/html/public
-ENV PHP_ERRORS_STDERR=1
-ENV RUN_SCRIPTS=1
-ENV REAL_IP_HEADER=1
-
-# Config Laravel (production)
+ENV WEB_DOCUMENT_ROOT=/app/public
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 ENV LOG_CHANNEL=stderr
 
-RUN chmod +x scripts/00-laravel-deploy.sh
-CMD ["/start.sh"]
+COPY . /app
+
+RUN composer install --no-dev --optimize-autoloader --no-interaction \
+    && chmod +x /app/scripts/00-laravel-deploy.sh \
+    && cp /app/scripts/00-laravel-deploy.sh /opt/docker/provision/entrypoint.d/20-laravel-deploy.sh
