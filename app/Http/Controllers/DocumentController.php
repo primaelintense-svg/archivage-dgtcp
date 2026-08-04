@@ -29,10 +29,10 @@ class DocumentController extends Controller
             abort(403);
         }
         $fichier = $document->fichier;
-        if (! $fichier || ! Storage::disk('local')->exists($fichier->chemin_fichier)) {
+        if (! $fichier || ! Storage::exists($fichier->chemin_fichier)) {
             abort(404);
         }
-        return Storage::disk('local')->response(
+        return Storage::response(
             $fichier->chemin_fichier,
             $fichier->nom
         );
@@ -62,7 +62,7 @@ class DocumentController extends Controller
             'utilisateur_depot_id' => Auth::id(),
         ]);
         $fichierUpload = $request->file('fichier');
-        $chemin = $fichierUpload->store('documents/' . now()->format('Y/m'), 'local');
+        $chemin = $fichierUpload->store('documents/' . now()->format('Y/m'));
         Fichier::create([
             'nom' => $fichierUpload->getClientOriginalName(),
             'taille' => $fichierUpload->getSize(),

@@ -6,6 +6,7 @@
     <title>Connexion — Archivage DGTCP</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
     <style>
         :root {
             --parchment: #F6F3EC;
@@ -146,7 +147,8 @@
         input[type="password"] {
             width: 100%;
             font-family: 'Inter', sans-serif;
-            font-size: 14px;
+            /* 16px minimum : évite le zoom automatique agaçant sur iPhone/Safari */
+            font-size: 16px;
             padding: 10px 12px;
             border: 1px solid var(--line);
             border-radius: 4px;
@@ -182,11 +184,13 @@
             border-radius: 4px;
             padding: 12px;
             font-family: 'Inter', sans-serif;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             letter-spacing: 0.01em;
             cursor: pointer;
             transition: background 0.15s ease;
+            /* Zone tactile confortable sur mobile (min. recommandé : 44px) */
+            min-height: 44px;
         }
 
         button:hover { background: var(--green-deep); }
@@ -200,10 +204,41 @@
             letter-spacing: 0.02em;
         }
 
+        /* ---- Tablette / petit mobile ---- */
         @media (max-width: 420px) {
             .entete { gap: 10px; }
             .entete img { width: 40px; height: 40px; }
             h1 { font-size: 17px; }
+        }
+
+        /* ---- Très petits écrans (vieux téléphones, mode paysage bas) ---- */
+        @media (max-width: 360px) {
+            .page { padding: 24px 12px; }
+
+            .carte {
+                padding: 24px 20px 20px;
+                border-radius: 4px;
+                box-shadow: none;
+                border: 1px solid var(--line);
+            }
+
+            .entete {
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 16px;
+                padding-bottom: 16px;
+            }
+
+            .entete img { width: 34px; height: 34px; }
+            h1 { font-size: 15px; }
+            .sous-titre { font-size: 10px; }
+        }
+
+        /* ---- Écran très bas (mode paysage sur mobile) ---- */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .page { padding: 16px 20px; align-items: flex-start; }
+            .carte { padding: 20px 28px; }
+            .entete { margin-bottom: 12px; padding-bottom: 12px; }
         }
     </style>
 </head>
@@ -248,10 +283,11 @@
 
             <button type="submit">Se connecter</button>
         </form>
-               <p style="text-align: center; font-size: 13px; margin-top: 20px;">
+
+        <p style="text-align: center; font-size: 13px; margin-top: 20px;">
             Pas encore de compte ?
             <a href="{{ route('demandeCompte.create') }}" style="color: var(--green);">Demander un accès</a>
-</p>
+        </p>
 
         <p class="pied">Direction Générale du Trésor et de la Comptabilité Publique</p>
     </div>

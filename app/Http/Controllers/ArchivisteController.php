@@ -49,7 +49,7 @@ class ArchivisteController extends Controller
         "Consultation du fichier du document {$document->reference}"
     );
 
-    return Storage::disk('local')->response(
+    return Storage::response(
         $document->fichier->chemin_fichier,
         $document->fichier->nom
     );

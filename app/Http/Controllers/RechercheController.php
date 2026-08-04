@@ -112,7 +112,7 @@ class RechercheController extends Controller
             "Téléchargement du document {$document->reference}"
         );
 
-        return Storage::disk('local')->download(
+        return Storage::download(
             $document->fichier->chemin_fichier,
             $document->fichier->nom
         );

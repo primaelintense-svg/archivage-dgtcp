@@ -5,6 +5,7 @@ use App\Http\Controllers\ArchivisteController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ChangerMotDePasseController;
 use App\Http\Controllers\DemandeCompteController;
+use App\Http\Controllers\DemandeReinitialisationController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\RapportController;
 use App\Http\Controllers\RechercheController;
@@ -19,6 +20,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/demande-acces', [DemandeCompteController::class, 'create'])->name('demandeCompte.create');
     Route::post('/demande-acces', [DemandeCompteController::class, 'store'])->name('demandeCompte.store');
 
+    // --- Demande de réinitialisation de mot de passe (validation admin) ---
+    Route::get('/demande-reinitialisation', [DemandeReinitialisationController::class, 'create'])->name('reinitialisation.create');
+    Route::post('/demande-reinitialisation', [DemandeReinitialisationController::class, 'store'])->name('reinitialisation.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -58,12 +62,17 @@ Route::middleware(['auth', 'doit_changer_mdp', 'role:administrateur'])->group(fu
     Route::post('/admin/demandes-acces/{demande}/approuver', [DemandeCompteController::class, 'approuver'])->name('demandeCompte.approuver');
     Route::post('/admin/demandes-acces/{demande}/rejeter', [DemandeCompteController::class, 'rejeter'])->name('demandeCompte.rejeter');
 
+    // --- Validation des demandes de réinitialisation ---
+    Route::get('/admin/demandes-reinitialisation', [DemandeReinitialisationController::class, 'index'])->name('reinitialisation.index');
+    Route::post('/admin/demandes-reinitialisation/{demande}/approuver', [DemandeReinitialisationController::class, 'approuver'])->name('reinitialisation.approuver');
+    Route::post('/admin/demandes-reinitialisation/{demande}/rejeter', [DemandeReinitialisationController::class, 'rejeter'])->name('reinitialisation.rejeter');
+
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::post('/users/{user}/toggle-actif', [UserController::class, 'toggleActif'])->name('users.toggleActif');
-     Route::delete('/users/{user}/supprimer', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::delete('/users/{user}/supprimer', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
 // ---- Visiteur + Archiviste : recherche multicritère ----

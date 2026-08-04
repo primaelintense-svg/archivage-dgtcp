@@ -136,7 +136,7 @@ class DocumentSeeder extends Seeder
             'date_expiration' => Document::calculerDateExpiration(now()->subDays(25)),
             'utilisateur_depot_id' => $agent->id,
             'utilisateur_traitant_id' => $archiviste->id,
-            'classification_id' => $classificationMandat->id,
+            'classification_id' => $archiviste->id,
         ]);
 
         Fichier::create([

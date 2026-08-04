@@ -18,6 +18,8 @@
             --success-green: #1e8449;
         }
 
+        * { box-sizing: border-box; }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: var(--text-main);
@@ -36,6 +38,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             border-radius: 4px;
         }
@@ -67,6 +71,16 @@
         th, td { border: 1px solid #eee; padding: 12px 15px; text-align: left; }
         th { background: var(--primary-green); color: #ffffff; font-weight: 600; }
         tr:nth-child(even) { background-color: #faf8f5; }
+
+        /* ---- Enveloppe de défilement horizontal pour tous les tableaux ---- */
+        .tableau-scroll {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 4px;
+        }
+        .tableau-scroll table { min-width: 560px; }
+        .tableau-scroll th, .tableau-scroll td { white-space: nowrap; }
 
         .grille-stats { display: flex; gap: 20px; flex-wrap: wrap; }
         .stat-carte {
@@ -103,6 +117,8 @@
             border-radius: 4px;
             font-weight: 600;
             transition: background 0.2s;
+            /* Zone tactile confortable */
+            min-height: 40px;
         }
         button:hover { background: var(--primary-green-hover); }
         .btn-danger { background: var(--danger-red); }
@@ -141,7 +157,7 @@
         .actif { color: var(--success-green); font-weight: bold; }
         .desactive { color: var(--text-muted); font-weight: bold; }
 
-        .actions-cell { display: flex; gap: 8px; align-items: center; }
+        .actions-cell { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .bouton-mini {
             padding: 6px 10px; background: #f0f0f0; border-radius: 4px;
             border: 1px solid #ccc; font-size: 0.85rem; color: var(--text-main);
@@ -158,6 +174,63 @@
         form.filtre a { font-size: 0.85rem; align-self: center; color: var(--text-muted); }
 
         .pagination-zone { margin-top: 12px; font-size: 0.85rem; }
+
+        /* ============================================================
+           RESPONSIVE — Tablette (≤ 768px)
+           ============================================================ */
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+
+            .section { padding: 16px; margin-bottom: 18px; }
+
+            h1 { font-size: 1.4rem; }
+            h2 { font-size: 1.05rem; }
+
+            .barre-nav {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                padding: 14px 16px;
+            }
+
+            .barre-nav form { width: 100%; }
+            .barre-nav button { width: 100%; }
+
+            .graphiques-flex { gap: 20px; }
+            .graphique-bloc { min-width: 100%; }
+
+            form.filtre {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            form.filtre > div { width: 100%; }
+            form.filtre select,
+            form.filtre input[type="date"] {
+                width: 100%;
+            }
+            form.filtre button { width: 100%; }
+            form.filtre a { text-align: center; }
+        }
+
+        /* ============================================================
+           RESPONSIVE — Mobile (≤ 480px)
+           ============================================================ */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+
+            .section { padding: 12px; border-radius: 4px; }
+
+            .stat-carte { min-width: 130px; padding: 14px; }
+            .stat-carte strong { font-size: 1.5rem; }
+
+            table { font-size: 0.85rem; }
+            th, td { padding: 8px 10px; }
+
+            .actions-cell { flex-direction: column; align-items: stretch; }
+            .actions-cell form,
+            .actions-cell a,
+            .actions-cell button { width: 100%; text-align: center; }
+        }
     </style>
 </head>
 <body>
@@ -240,28 +313,31 @@
 {{-- ============ RAPPORTS PDF ============ --}}
 <div class="section">
     <h2>Rapports PDF</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Rapport</th>
-                <th>Description</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>État récapitulatif</td>
-                <td>Documents archivés, groupés par service et par exercice comptable</td>
-                <td><a href="{{ route('rapports.etatRecapitulatif') }}">📄 Télécharger</a></td>
-            </tr>
-            <tr>
-                <td>Documents expirant</td>
-                <td>Documents arrivant à expiration de conservation (90 jours ou moins)</td>
-                <td><a href="{{ route('rapports.documentsExpirant') }}">📄 Télécharger</a></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="tableau-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rapport</th>
+                    <th>Description</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>État récapitulatif</td>
+                    <td>Documents archivés, groupés par service et par exercice comptable</td>
+                    <td><a href="{{ route('rapports.etatRecapitulatif') }}">📄 Télécharger</a></td>
+                </tr>
+                <tr>
+                    <td>Documents expirant</td>
+                    <td>Documents arrivant à expiration de conservation (90 jours ou moins)</td>
+                    <td><a href="{{ route('rapports.documentsExpirant') }}">📄 Télécharger</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
+
 {{-- ============ DEMANDES D'ACCÈS ============ --}}
 @if ($demandesCompteEnAttente > 0)
     <div class="section">
@@ -276,25 +352,27 @@
 {{-- ============ ALERTES D'EXPIRATION ============ --}}
 <div class="section">
     <h2>Alertes d'expiration</h2>
-    <table>
-        <thead>
-            <tr><th>Référence</th><th>Titre</th><th>Déposé par</th><th>Expiration</th></tr>
-        </thead>
-        <tbody>
-            @forelse ($documentsExpirantBientot as $document)
-                <tr>
-                    <td>{{ $document->reference }}</td>
-                    <td>{{ $document->titre }}</td>
-                    <td>{{ $document->agentDepot->prenom }} {{ $document->agentDepot->nom }}</td>
-                    <td>{{ $document->date_expiration->format('d/m/Y') }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" style="text-align: center; color: var(--text-muted);">Aucun document n'expire prochainement.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+    <div class="tableau-scroll">
+        <table>
+            <thead>
+                <tr><th>Référence</th><th>Titre</th><th>Déposé par</th><th>Expiration</th></tr>
+            </thead>
+            <tbody>
+                @forelse ($documentsExpirantBientot as $document)
+                    <tr>
+                        <td>{{ $document->reference }}</td>
+                        <td>{{ $document->titre }}</td>
+                        <td>{{ $document->agentDepot->prenom }} {{ $document->agentDepot->nom }}</td>
+                        <td>{{ $document->date_expiration->format('d/m/Y') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted);">Aucun document n'expire prochainement.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 
 {{-- ============ JOURNAL DES ACTIVITÉS ============ --}}
@@ -335,23 +413,25 @@
         <a href="{{ route('admin.dashboard') }}">Réinitialiser</a>
     </form>
 
-    <table>
-        <thead>
-            <tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Détails</th></tr>
-        </thead>
-        <tbody>
-            @forelse ($entrees as $entree)
-                <tr>
-                    <td>{{ $entree->date_action->format('d/m/Y H:i') }}</td>
-                    <td>{{ $entree->utilisateur ? $entree->utilisateur->prenom . ' ' . $entree->utilisateur->nom : '— (non authentifié)' }}</td>
-                    <td>{{ $entree->action }}</td>
-                    <td>{{ $entree->details }}</td>
-                </tr>
-            @empty
-                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Aucune activité pour ces critères.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+    <div class="tableau-scroll">
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Détails</th></tr>
+            </thead>
+            <tbody>
+                @forelse ($entrees as $entree)
+                    <tr>
+                        <td>{{ $entree->date_action->format('d/m/Y H:i') }}</td>
+                        <td>{{ $entree->utilisateur ? $entree->utilisateur->prenom . ' ' . $entree->utilisateur->nom : '— (non authentifié)' }}</td>
+                        <td>{{ $entree->action }}</td>
+                        <td>{{ $entree->details }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Aucune activité pour ces critères.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 
 {{-- ============ GESTION DES UTILISATEURS ============ --}}
@@ -360,48 +440,50 @@
 
     <a href="{{ route('users.create') }}" class="action-link-ajout">+ Ajouter un utilisateur</a>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nom &amp; Prénom</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($users as $user)
+    <div class="tableau-scroll">
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ $user->nom }} {{ $user->prenom }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>{{ $user->role }}</td>
-                    <td class="{{ $user->actif ? 'actif' : 'desactive' }}">
-                        {{ $user->actif ? 'Actif' : 'Désactivé' }}
-                    </td>
-                    <td>
-                        <div class="actions-cell">
-                            <a href="{{ route('users.edit', $user) }}" class="bouton-mini">Modifier</a>
-
-                            <form action="{{ route('users.toggleActif', $user) }}" method="POST" style="display:inline;">
-                                @csrf
-                                <button type="submit" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem;">
-                                    {{ $user->actif ? 'Désactiver' : 'Activer' }}
-                                </button>
-                            </form>
-
-                            <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline;"
-                                  onsubmit="return confirm('Supprimer définitivement {{ $user->email }} ? Cette action est irréversible.');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-danger" style="padding: 6px 10px; font-size: 0.85rem;">Supprimer</button>
-                            </form>
-                        </div>
-                    </td>
+                    <th>Nom &amp; Prénom</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($users as $user)
+                    <tr>
+                        <td>{{ $user->nom }} {{ $user->prenom }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->role }}</td>
+                        <td class="{{ $user->actif ? 'actif' : 'desactive' }}">
+                            {{ $user->actif ? 'Actif' : 'Désactivé' }}
+                        </td>
+                        <td>
+                            <div class="actions-cell">
+                                <a href="{{ route('users.edit', $user) }}" class="bouton-mini">Modifier</a>
+
+                                <form action="{{ route('users.toggleActif', $user) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem;">
+                                        {{ $user->actif ? 'Désactiver' : 'Activer' }}
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline;"
+                                      onsubmit="return confirm('Supprimer définitivement {{ $user->email }} ? Cette action est irréversible.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-danger" style="padding: 6px 10px; font-size: 0.85rem;">Supprimer</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
     <div class="pagination-zone">{{ $users->links() }}</div>
 </div>
 
