@@ -34,8 +34,6 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/private'),
             'serve' => true,
-            'request_checksum_calculation' => 'when_required',
-            'response_checksum_validation' => 'when_required',
             'throw' => false,
             'report' => false,
         ],
